@@ -1,0 +1,11 @@
+[package]
+name = "rust-rbdatatype"
+version = "0.1.0"
+authors = ["Tim Morgan <tim@timmorgan.org>"]
+
+[dependencies]
+libc = "0.2.37"
+ruby-sys = "0.3.0"
+
+[lib]
+crate-type = ["dylib"]
