@@ -57,7 +57,7 @@ struct RData {
 }
 
 #[no_mangle]
-pub extern fn init_thing() {
+pub extern "C" fn init_thing() {
     let name = c_str_ptr("Thing");
     let klass = unsafe { rb_define_class(name, rb_cObject) };
     unsafe { rb_define_alloc_func(klass, alloc) };
