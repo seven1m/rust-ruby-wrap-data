@@ -3,7 +3,7 @@ extern crate ruby_sys;
 
 use ruby_sys::{
     class::{ rb_define_class, rb_define_method },
-    fixnum::rb_int2inum,
+    fixnum::{ rb_int2inum, rb_num2int },
     rb_cObject,
     types::{ CallbackPtr, c_char, c_void, RBasic, Value },
     value::RubySpecialConsts::Nil,
@@ -24,7 +24,7 @@ pub extern "C" fn free(data: *mut c_void) {
 }
 
 pub extern "C" fn alloc(klass: Value) -> Value {
-    let data = Box::new(12);
+    let data = Box::new(12 as u32);
     let datap = Box::into_raw(data) as *mut c_void;
     unsafe { rb_data_object_wrap(klass, datap, None, Some(free)) }
 }
@@ -38,6 +38,14 @@ pub extern "C" fn get_internal_data(itself: Value) -> Value {
     let rdata: *const RData = unsafe { mem::transmute(itself) };
     let the_data = unsafe { Box::from_raw((*rdata).data) };
     unsafe { rb_int2inum(*the_data as isize) }
+}
+
+pub extern "C" fn set_internal_data(itself: Value, data: Value) -> Value {
+    let rdata: *const RData = unsafe { mem::transmute(itself) };
+    let raw_data = unsafe { rb_num2int(data) };
+    let datap = Box::into_raw(Box::new(raw_data)) as *mut c_void;
+    unsafe { ::libc::memcpy((*rdata).data, datap, ::mem::size_of::<u32>()) };
+    data
 }
 
 #[repr(C)]
@@ -54,4 +62,5 @@ pub extern fn init_thing() {
     let klass = unsafe { rb_define_class(name, rb_cObject) };
     unsafe { rb_define_alloc_func(klass, alloc) };
     unsafe { rb_define_method(klass, c_str_ptr("get_internal_data"), get_internal_data as CallbackPtr, 0) };
+    unsafe { rb_define_method(klass, c_str_ptr("set_internal_data"), set_internal_data as CallbackPtr, 1) };
 }
