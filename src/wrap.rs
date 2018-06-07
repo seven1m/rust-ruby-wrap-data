@@ -36,13 +36,17 @@ extern "C" fn free<T>(data: *mut c_void) {
 }
 
 pub fn get<T>(itself: Value) -> Box<T> {
-    let rdata: *mut RData = unsafe { mem::transmute(itself) };
+    let rdata = rdata(itself);
     let datap = unsafe { (*rdata).data as *mut T };
     unsafe { Box::from_raw(datap) }
 }
 
 pub fn set<T>(itself: Value, data: Box<T>) {
+    let rdata = rdata(itself);
     let datap = Box::into_raw(data) as *mut c_void;
-    let rdata: *mut RData = unsafe { mem::transmute(itself) };
     unsafe { (*rdata).data = datap };
+}
+
+fn rdata(object: Value) -> *mut RData {
+    unsafe { mem::transmute(object) }
 }
