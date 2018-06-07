@@ -9,10 +9,6 @@ use ruby_sys::{class::{rb_define_class, rb_define_method}, rb_cObject,
 use std::ffi::CString;
 use std::mem;
 
-extern "C" {
-    pub fn rb_define_alloc_func(klass: Value, func: extern "C" fn(Value) -> Value);
-}
-
 #[derive(Debug)]
 enum MyValue {
     Vec(Box<Vec<MyValue>>),
