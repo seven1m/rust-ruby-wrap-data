@@ -10,7 +10,7 @@ use std::mem;
 
 #[derive(Debug)]
 enum MyValue {
-    Vec(Box<Vec<MyValue>>),
+    Vec(Vec<MyValue>),
     Str(String),
 }
 
@@ -53,7 +53,7 @@ fn mutate_that_data(itself: Value) -> Value {
     println!("mutating the data");
     let new_data: Box<Vec<MyValue>> = Box::new(vec![
         MyValue::Str("foo".to_string()),
-        MyValue::Vec(Box::new(vec![MyValue::Str("bar".to_string())])),
+        MyValue::Vec(vec![MyValue::Str("bar".to_string())]),
     ]);
     wrap::update(itself, new_data);
     itself
