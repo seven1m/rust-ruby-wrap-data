@@ -29,7 +29,7 @@ pub fn wrap<T>(klass: Value, data: Box<T>) -> Value {
     unsafe { rb_data_object_wrap(klass, datap, None, Some(free::<T>)) }
 }
 
-pub extern "C" fn free<T>(data: *mut c_void) {
+extern "C" fn free<T>(data: *mut c_void) {
     // memory is freed when the box goes out of the scope
     let datap = data as *mut T;
     unsafe { Box::from_raw(datap) };
