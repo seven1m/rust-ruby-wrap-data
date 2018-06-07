@@ -3,8 +3,7 @@ extern crate ruby_sys;
 
 mod wrap;
 
-use ruby_sys::{class::{rb_define_class, rb_define_method}, rb_cObject,
-               types::{CallbackPtr, Value}};
+use ruby_sys::{class::{rb_define_class, rb_define_method}, rb_cObject, types::{CallbackPtr, Value}};
 
 use std::ffi::CString;
 use std::mem;
@@ -52,16 +51,10 @@ fn show_me_the_data(itself: Value) -> Value {
 
 fn mutate_that_data(itself: Value) -> Value {
     println!("mutating the data");
-    let new_data: Box<Vec<MyValue>> = Box::new(
-        vec![
-            MyValue::Str("foo".to_string()),
-            MyValue::Vec(Box::new(
-                vec![
-                    MyValue::Str("bar".to_string())
-                ]
-            ))
-        ]
-    );
+    let new_data: Box<Vec<MyValue>> = Box::new(vec![
+        MyValue::Str("foo".to_string()),
+        MyValue::Vec(Box::new(vec![MyValue::Str("bar".to_string())])),
+    ]);
     wrap::update(itself, new_data);
     itself
 }

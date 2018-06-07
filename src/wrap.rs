@@ -1,4 +1,4 @@
-use ruby_sys::{types::{c_void, CallbackPtr, RBasic, Value}};
+use ruby_sys::types::{c_void, CallbackPtr, RBasic, Value};
 
 use std::mem;
 
