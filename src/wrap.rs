@@ -41,7 +41,7 @@ pub fn get<T>(itself: Value) -> Box<T> {
     unsafe { Box::from_raw(datap) }
 }
 
-pub fn update<T>(itself: Value, data: Box<T>) {
+pub fn set<T>(itself: Value, data: Box<T>) {
     let datap = Box::into_raw(data) as *mut c_void;
     let rdata: *mut RData = unsafe { mem::transmute(itself) };
     unsafe { (*rdata).data = datap };

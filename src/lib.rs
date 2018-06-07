@@ -55,6 +55,6 @@ fn mutate_that_data(itself: Value) -> Value {
         MyValue::Str("foo".to_string()),
         MyValue::Vec(vec![MyValue::Str("bar".to_string())]),
     ]);
-    wrap::update(itself, new_data);
+    wrap::set(itself, new_data);
     itself
 }
