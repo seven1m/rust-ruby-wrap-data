@@ -8,7 +8,7 @@
 //!
 //! ## Example
 //!
-//! ```
+//! ```rust
 //! extern crate ruby_sys;
 //! extern crate ruby_wrap_data;
 //!
@@ -49,7 +49,12 @@
 //!     let thing = unsafe { rb_class_new_instance(0, &RB_NIL, klass) };
 //!
 //!     // get the data out of the ruby object
-//!     let data: Box<MyValue> = ruby_wrap_data::remove(thing).unwrap();
+//!     let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
+//!     assert!(data.is_some());
+//!
+//!     // if you try to remove it again, you get None
+//!     let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
+//!     assert!(data.is_none());
 //!
 //!     // set new data on the object
 //!     let new_data = Box::new(MyValue { val : 2 });
@@ -91,17 +96,41 @@ pub fn define_alloc_func(klass: Value, alloc: fn(Value) -> Value) {
     unsafe { rb_define_alloc_func(klass, alloc as CallbackPtr) };
 }
 
+/// Creates a new instance of the given class, wrapping the given
+/// heap-allocated data type.
+///
+/// # Arguments
+///
+/// * `klass` - a Ruby Class
+/// * `data`  - a Box<T> - the data you wish to embed in the Ruby object
 pub fn wrap<T>(klass: Value, data: Box<T>) -> Value {
     let datap = Box::into_raw(data) as *mut c_void;
     unsafe { rb_data_object_wrap(klass, datap, None, Some(free::<T>)) }
 }
 
-extern "C" fn free<T>(data: *mut c_void) {
-    // memory is freed when the box goes out of the scope
-    let datap = data as *mut T;
-    unsafe { Box::from_raw(datap) };
-}
-
+/// Removes and returns the wrapped data from the given Ruby object.
+/// Returns None if the data is currently NULL.
+///
+/// # Arguments
+///
+/// * `object` - a Ruby object
+///
+/// # Notes
+///
+/// You will need to specify the data type of the variable since it
+/// cannot be inferred:
+///
+/// ```compile_fail
+/// let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
+/// ```
+///
+/// Also note, if you wish to peek at the data without removing it,
+/// you will need to put it back using `set`, like this:
+///
+/// ```compile_fail
+/// let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
+/// ruby_wrap_data::set(thing, data.unwrap());
+/// ```
 pub fn remove<T>(object: Value) -> Option<Box<T>> {
     let rdata = rdata(object);
     let datap = unsafe { (*rdata).data as *mut T };
@@ -113,10 +142,22 @@ pub fn remove<T>(object: Value) -> Option<Box<T>> {
     }
 }
 
+/// Sets the wrapped data on the given Ruby object.
+///
+/// # Arguments
+///
+/// * `object` - a Ruby object
+/// * `data`   - a Box<T> - the data you wish to embed in the Ruby object
 pub fn set<T>(object: Value, data: Box<T>) {
     let rdata = rdata(object);
     let datap = Box::into_raw(data) as *mut c_void;
     unsafe { (*rdata).data = datap };
+}
+
+extern "C" fn free<T>(data: *mut c_void) {
+    // memory is freed when the box goes out of the scope
+    let datap = data as *mut T;
+    unsafe { Box::from_raw(datap) };
 }
 
 fn set_none(object: Value) {
