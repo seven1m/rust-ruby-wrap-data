@@ -68,8 +68,8 @@ use ruby_sys::types::{c_void, CallbackPtr, RBasic, Value};
 use std::{mem, ptr};
 
 extern "C" {
-    pub fn rb_define_alloc_func(klass: Value, func: CallbackPtr);
-    pub fn rb_data_object_wrap(
+    fn rb_define_alloc_func(klass: Value, func: CallbackPtr);
+    fn rb_data_object_wrap(
         klass: Value,
         datap: *mut c_void,
         mark: Option<extern "C" fn(*mut c_void)>,
