@@ -33,7 +33,7 @@
 //!     // build your data and put it on the heap
 //!     let data = Box::new(MyValue { val: 1 });
 //!     // call `wrap()`, passing your klass and data
-//!     ruby_wrap_data::wrap(klass, data)
+//!     ruby_wrap_data::wrap(klass, Some(data))
 //! }
 //!
 //! fn main() {
@@ -86,7 +86,8 @@ struct RData {
 }
 
 /// Defines an 'alloc' function for a Ruby class. Such a function should
-/// build your initial data and call `wrap(klass, data)`.
+/// build your initial data and return the result of calling
+/// `wrap(klass, data)`.
 ///
 /// # Arguments
 ///
@@ -102,9 +103,13 @@ pub fn define_alloc_func(klass: Value, alloc: fn(Value) -> Value) {
 /// # Arguments
 ///
 /// * `klass` - a Ruby Class
-/// * `data`  - a Box<T> - the data you wish to embed in the Ruby object
-pub fn wrap<T>(klass: Value, data: Box<T>) -> Value {
-    let datap = Box::into_raw(data) as *mut c_void;
+/// * `data`  - an Option<Box<T>> - the data you wish to embed in the Ruby object or None
+pub fn wrap<T>(klass: Value, data: Option<Box<T>>) -> Value {
+    let datap = if data.is_some() {
+        Box::into_raw(data.unwrap()) as *mut c_void
+    } else {
+        ptr::null_mut()
+    };
     unsafe { rb_data_object_wrap(klass, datap, None, Some(free::<T>)) }
 }
 
@@ -178,10 +183,13 @@ mod tests {
         rb_cObject,
         types::Value,
         value::RubySpecialConsts::{Nil},
-        vm::ruby_init
+        vm
     };
 
     use std::ffi::CString;
+    use std::sync::{Once, ONCE_INIT};
+
+    static RUBY_INIT: Once = ONCE_INIT;
 
     const RB_NIL: Value = Value { value: Nil as usize };
 
@@ -192,13 +200,24 @@ mod tests {
 
     fn alloc(klass: Value) -> Value {
         let data = Box::new(MyValue { val: 1 });
-        wrap(klass, data)
+        wrap(klass, Some(data))
+    }
+
+    fn alloc_using_none(klass: Value) -> Value {
+        wrap::<Option<Box<MyValue>>>(klass, None)
+    }
+
+    fn ruby_init() {
+        println!("h");
+        RUBY_INIT.call_once(|| {
+            unsafe { vm::ruby_init() };
+            println!("here");
+        });
     }
 
     #[test]
     fn it_works() {
-        // start ruby
-        unsafe { ruby_init() };
+        ruby_init();
 
         // create our class
         let name = CString::new("Thing").unwrap().into_raw();
@@ -222,5 +241,16 @@ mod tests {
         // looks right
         let data: Box<MyValue> = remove(thing).unwrap();
         assert_eq!(*data, MyValue { val: 2 });
+
+        // create our class
+        let name = CString::new("Thing2").unwrap().into_raw();
+        let klass = unsafe { rb_define_class(name, rb_cObject) };
+
+        // set up our alloc function and create the object
+        define_alloc_func(klass, alloc_using_none);
+        let thing = unsafe { rb_class_new_instance(0, &RB_NIL, klass) };
+
+        // the data matches what we put in
+        assert!(remove::<Option<Box<MyValue>>>(thing).is_none());
     }
 }
