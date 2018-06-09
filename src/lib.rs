@@ -49,9 +49,7 @@
 //!     let thing = unsafe { rb_class_new_instance(0, &RB_NIL, klass) };
 //!
 //!     // get the data out of the ruby object
-//!     let data: Box<MyValue> = ruby_wrap_data::get(thing);
-//!     // forget the data so it's not freed
-//!     mem::forget(data);
+//!     let data: Box<MyValue> = ruby_wrap_data::remove(thing).unwrap();
 //!
 //!     // set new data on the object
 //!     let new_data = Box::new(MyValue { val : 2 });
@@ -62,7 +60,7 @@ extern crate ruby_sys;
 
 use ruby_sys::types::{c_void, CallbackPtr, RBasic, Value};
 
-use std::mem;
+use std::{mem, ptr};
 
 extern "C" {
     pub fn rb_define_alloc_func(klass: Value, func: CallbackPtr);
@@ -104,16 +102,26 @@ extern "C" fn free<T>(data: *mut c_void) {
     unsafe { Box::from_raw(datap) };
 }
 
-pub fn get<T>(itself: Value) -> Box<T> {
-    let rdata = rdata(itself);
+pub fn remove<T>(object: Value) -> Option<Box<T>> {
+    let rdata = rdata(object);
     let datap = unsafe { (*rdata).data as *mut T };
-    unsafe { Box::from_raw(datap) }
+    if datap.is_null() {
+        None
+    } else {
+        set_none(object);
+        Some(unsafe { Box::from_raw(datap) })
+    }
 }
 
-pub fn set<T>(itself: Value, data: Box<T>) {
-    let rdata = rdata(itself);
+pub fn set<T>(object: Value, data: Box<T>) {
+    let rdata = rdata(object);
     let datap = Box::into_raw(data) as *mut c_void;
     unsafe { (*rdata).data = datap };
+}
+
+fn set_none(object: Value) {
+    let rdata = rdata(object);
+    unsafe { (*rdata).data = ptr::null_mut() };
 }
 
 fn rdata(object: Value) -> *mut RData {
@@ -133,7 +141,6 @@ mod tests {
     };
 
     use std::ffi::CString;
-    use std::mem;
 
     const RB_NIL: Value = Value { value: Nil as usize };
 
@@ -149,18 +156,30 @@ mod tests {
 
     #[test]
     fn it_works() {
+        // start ruby
         unsafe { ruby_init() };
+
+        // create our class
         let name = CString::new("Thing").unwrap().into_raw();
         let klass = unsafe { rb_define_class(name, rb_cObject) };
+
+        // set up our alloc function and create the object
         define_alloc_func(klass, alloc);
         let thing = unsafe { rb_class_new_instance(0, &RB_NIL, klass) };
-        let data: Box<MyValue> = get(thing);
+
+        // the data matches what we put in
+        let data: Box<MyValue> = remove(thing).unwrap();
         assert_eq!(*data, MyValue { val: 1 });
-        mem::forget(data);
+
+        // now it's None
+        assert_eq!(remove::<Option<Box<MyValue>>>(thing), None);
+
+        // set new data
         let new_data = Box::new(MyValue { val : 2 });
         set(thing, new_data);
-        let data: Box<MyValue> = get(thing);
+
+        // looks right
+        let data: Box<MyValue> = remove(thing).unwrap();
         assert_eq!(*data, MyValue { val: 2 });
-        mem::forget(data);
     }
 }
