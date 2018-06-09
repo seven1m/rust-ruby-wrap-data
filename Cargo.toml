@@ -1,11 +1,13 @@
 [package]
-name = "rust-rbdatatype"
+name = "ruby-wrap-data"
 version = "0.1.0"
 authors = ["Tim Morgan <tim@timmorgan.org>"]
+description = "Build a Ruby object that wraps Box<T>"
+homepage = "https://github.com/seven1m/rust-ruby-wrap-data"
+documentation = "https://docs.rs/ruby-wrap-data"
+repository = "https://github.com/seven1m/rust-ruby-wrap-data"
+keywords = ["ruby"]
+license = "MIT"
 
 [dependencies]
-libc = "0.2.37"
 ruby-sys = "0.3.0"
-
-[lib]
-crate-type = ["dylib"]
