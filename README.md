@@ -1,14 +1,14 @@
 # Ruby Wrap Data
 
-`ruby_wrap_data` is a Rust crate that provides a fairly low-level means of doing
-what Ruby's `Data_Wrap_Struct` macro does. That is to say, you can store a Rust
-`Box<T>` inside a Ruby object and get it back out again.
+`ruby_wrap_data` is a crate that provides a fairly low-level means of doing
+what Ruby's `Data_Wrap_Struct` macro does. That is to say, you can store a
+Rust `Box<T>` inside a Ruby object and get it back out again.
 
 Any heap-allocated struct, enum, or whatever should work.
 
 ## Example
 
-```
+```rust
 extern crate ruby_sys;
 extern crate ruby_wrap_data;
 
@@ -33,7 +33,7 @@ fn alloc(klass: Value) -> Value {
     // build your data and put it on the heap
     let data = Box::new(MyValue { val: 1 });
     // call `wrap()`, passing your klass and data
-    ruby_wrap_data::wrap(klass, data)
+    ruby_wrap_data::wrap(klass, Some(data))
 }
 
 fn main() {
