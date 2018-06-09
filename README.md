@@ -32,7 +32,7 @@ struct MyValue {
 fn alloc(klass: Value) -> Value {
     // build your data and put it on the heap
     let data = Box::new(MyValue { val: 1 });
-    // call `wrap()`, passing your klass and data
+    // call `wrap()`, passing your class and data
     ruby_wrap_data::wrap(klass, Some(data))
 }
 
