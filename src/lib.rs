@@ -1,6 +1,4 @@
-//! # Ruby Wrap Data
-//!
-//! `ruby_wrap_data` is a crate that provides a fairly low-level means of doing
+//! `ruby_wrap_data` is a module that provides a fairly low-level means of doing
 //! what Ruby's `Data_Wrap_Struct` macro does. That is to say, you can store a
 //! pointer to a Rust `Box<T>` inside a Ruby object and get it back out again.
 //!
@@ -120,7 +118,7 @@ pub fn define_alloc_func(klass: Value, alloc: fn(Value) -> Value) {
 /// # Arguments
 ///
 /// * `klass` - a Ruby Class
-/// * `data`  - an Option<Box<T>> - the data you wish to embed in the Ruby object or None
+/// * `data`  - an `Option<Box<T>>` - the data you wish to embed in the Ruby object or None
 pub fn wrap<T>(klass: Value, data: Option<Box<T>>) -> Value {
     let datap = if data.is_some() {
         Box::into_raw(data.unwrap()) as *mut c_void
@@ -170,7 +168,7 @@ pub fn remove<T>(object: Value) -> Option<Box<T>> {
 /// # Arguments
 ///
 /// * `object` - a Ruby object
-/// * `data`   - a Box<T> - the data you wish to embed in the Ruby object
+/// * `data`   - a `Box<T>` - the data you wish to embed in the Ruby object
 pub fn set<T>(object: Value, data: Box<T>) {
     let rdata = rdata(object);
     let datap = Box::into_raw(data) as *mut c_void;

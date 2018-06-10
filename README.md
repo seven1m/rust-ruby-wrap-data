@@ -1,8 +1,6 @@
 # ruby-wrap-data
 
-## Ruby Wrap Data
-
-`ruby_wrap_data` is a crate that provides a fairly low-level means of doing
+`ruby_wrap_data` is a module that provides a fairly low-level means of doing
 what Ruby's `Data_Wrap_Struct` macro does. That is to say, you can store a
 pointer to a Rust `Box<T>` inside a Ruby object and get it back out again.
 
