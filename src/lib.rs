@@ -125,14 +125,14 @@ pub fn wrap<T>(klass: Value, data: Option<Box<T>>) -> Value {
 /// You will need to specify the data type of the variable since it
 /// cannot be inferred:
 ///
-/// ```compile_fail
+/// ```rust,ignore
 /// let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
 /// ```
 ///
 /// Also note, if you wish to peek at the data without removing it,
 /// you will need to put it back using `set`, like this:
 ///
-/// ```compile_fail
+/// ```rust,ignore
 /// let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
 /// ruby_wrap_data::set(thing, data.unwrap());
 /// ```
