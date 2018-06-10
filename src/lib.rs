@@ -77,12 +77,6 @@
 //! export LD_LIBRARY_PATH=$HOME/.rbenv/versions/2.5.1/lib
 //! RUBY=$(rbenv which ruby) cargo test
 //! ```
-//!
-//! ## Copyright and License
-//!
-//! Copyright Tim Morgan
-//!
-//! Licensed MIT
 
 extern crate ruby_sys;
 
