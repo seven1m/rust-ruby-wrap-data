@@ -134,6 +134,7 @@ pub fn wrap<T>(klass: Value, data: Option<Box<T>>) -> Value {
 ///
 /// ```rust,ignore
 /// let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
+/// // do something
 /// ruby_wrap_data::set(thing, data.unwrap());
 /// ```
 pub fn remove<T>(object: Value) -> Option<Box<T>> {
