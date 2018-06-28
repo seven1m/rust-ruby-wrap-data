@@ -10,21 +10,18 @@
 //! extern crate ruby_sys;
 //! extern crate ruby_wrap_data;
 //!
-//! use ruby_sys::{
-//!     class::{rb_class_new_instance, rb_define_class},
-//!     rb_cObject,
-//!     types::Value,
-//!     value::RubySpecialConsts::{Nil},
-//!     vm::ruby_init
-//! };
+//! use ruby_sys::{class::{rb_class_new_instance, rb_define_class}, rb_cObject, types::Value,
+//!                value::RubySpecialConsts::Nil, vm::ruby_init};
 //!
 //! use std::ffi::CString;
 //! use std::mem;
 //!
-//! const RB_NIL: Value = Value { value: Nil as usize };
+//! const RB_NIL: Value = Value {
+//!     value: Nil as usize,
+//! };
 //!
 //! struct MyValue {
-//!     pub val: u16
+//!     pub val: u16,
 //! }
 //!
 //! fn alloc(klass: Value) -> Value {
@@ -55,7 +52,7 @@
 //!     assert!(data.is_none());
 //!
 //!     // set new data on the object
-//!     let new_data = Box::new(MyValue { val : 2 });
+//!     let new_data = Box::new(MyValue { val: 2 });
 //!     ruby_wrap_data::set(thing, new_data);
 //! }
 //! ```
@@ -194,24 +191,21 @@ fn rdata(object: Value) -> *mut RData {
 mod tests {
     use super::*;
 
-    use ruby_sys::{
-        class::{rb_class_new_instance, rb_define_class},
-        rb_cObject,
-        types::Value,
-        value::RubySpecialConsts::{Nil},
-        vm
-    };
+    use ruby_sys::{vm, class::{rb_class_new_instance, rb_define_class}, rb_cObject, types::Value,
+                   value::RubySpecialConsts::Nil};
 
     use std::ffi::CString;
     use std::sync::{Once, ONCE_INIT};
 
     static RUBY_INIT: Once = ONCE_INIT;
 
-    const RB_NIL: Value = Value { value: Nil as usize };
+    const RB_NIL: Value = Value {
+        value: Nil as usize,
+    };
 
-    #[derive(Debug,PartialEq)]
+    #[derive(Debug, PartialEq)]
     struct MyValue {
-        pub val: u16
+        pub val: u16,
     }
 
     fn alloc(klass: Value) -> Value {
@@ -251,7 +245,7 @@ mod tests {
         assert_eq!(remove::<Option<Box<MyValue>>>(thing), None);
 
         // set new data
-        let new_data = Box::new(MyValue { val : 2 });
+        let new_data = Box::new(MyValue { val: 2 });
         set(thing, new_data);
 
         // looks right

@@ -12,21 +12,18 @@ Any heap-allocated struct, enum, or whatever should work.
 extern crate ruby_sys;
 extern crate ruby_wrap_data;
 
-use ruby_sys::{
-    class::{rb_class_new_instance, rb_define_class},
-    rb_cObject,
-    types::Value,
-    value::RubySpecialConsts::{Nil},
-    vm::ruby_init
-};
+use ruby_sys::{class::{rb_class_new_instance, rb_define_class}, rb_cObject, types::Value,
+               value::RubySpecialConsts::Nil, vm::ruby_init};
 
 use std::ffi::CString;
 use std::mem;
 
-const RB_NIL: Value = Value { value: Nil as usize };
+const RB_NIL: Value = Value {
+    value: Nil as usize,
+};
 
 struct MyValue {
-    pub val: u16
+    pub val: u16,
 }
 
 fn alloc(klass: Value) -> Value {
@@ -57,7 +54,7 @@ fn main() {
     assert!(data.is_none());
 
     // set new data on the object
-    let new_data = Box::new(MyValue { val : 2 });
+    let new_data = Box::new(MyValue { val: 2 });
     ruby_wrap_data::set(thing, new_data);
 }
 ```
