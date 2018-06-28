@@ -27,9 +27,9 @@ struct MyValue {
 }
 
 fn alloc(klass: Value) -> Value {
-    // build your data and put it on the heap
+    // put your value in a Box
     let data = Box::new(MyValue { val: 1 });
-    // call `wrap()`, passing your class and data
+    // call `wrap()`, passing your class and value
     ruby_wrap_data::wrap(klass, Some(data))
 }
 
@@ -45,7 +45,8 @@ fn main() {
     // create a new instance of the class
     let thing = unsafe { rb_class_new_instance(0, &RB_NIL, klass) };
 
-    // get the data out of the ruby object
+    // get your value from the ruby object
+    // note: once remove() is called, the pointer in your ruby object is NULL
     let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
     assert!(data.is_some());
 
@@ -53,7 +54,7 @@ fn main() {
     let data: Option<Box<MyValue>> = ruby_wrap_data::remove(thing);
     assert!(data.is_none());
 
-    // set new data on the object
+    // set a new value on the object
     let new_data = Box::new(MyValue { val: 2 });
     ruby_wrap_data::set(thing, new_data);
 }
